@@ -688,8 +688,10 @@ export default function Home() {
           .add-quantity { grid-column:1; grid-row:2; }
           .add-submit { grid-column:2; grid-row:2; min-height:48px; padding:10px 8px; font-size:14px; }
           .add-category { grid-column:1 / -1; grid-row:3; }
-          .add-tools { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-          .add-tools button, .add-tools label { display:flex; align-items:center; justify-content:center; min-height:42px; white-space:nowrap; }
+          .add-tools { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; width:100%; }
+          .add-tools button, .add-tools label { box-sizing:border-box; display:flex; min-width:0; width:100%; min-height:48px; align-items:center; justify-content:center; padding:9px 7px; text-align:center; white-space:normal; overflow-wrap:anywhere; line-height:1.25; }
+          .add-tools label { cursor:pointer; }
+          .add-tools input[type="file"] { display:none; }
           .mobile-drawer { position:fixed; inset:0; z-index:60; display:flex; }
           .mobile-drawer-backdrop { position:absolute; inset:0; background:rgba(13,35,25,.42); }
           .mobile-drawer-panel { position:relative; width:min(82vw,320px); height:100%; overflow-y:auto; background:#fff; padding:22px 18px; box-shadow:12px 0 35px rgba(0,0,0,.14); }
@@ -930,7 +932,7 @@ export default function Home() {
                   <button type="button" className="secondary text-xs" onClick={startVoiceInput} disabled={voiceListening}>🎙 Speak product</button>
                   {voiceListening && <><span className="self-center text-xs font-medium text-[#176b4a]">Listening… say the product, then press Stop.</span><button type="button" className="secondary text-xs" onClick={stopVoiceInput}>Stop listening</button></>}
                   <label className="secondary cursor-pointer text-xs">📷 Take photo / Upload picture
-                    <input type="file" accept="image/*" capture="environment" className="hidden" onChange={readShoppingPhoto} />
+                    <input type="file" accept="image/*" className="hidden" onChange={readShoppingPhoto} />
                   </label>
                   {photoBusy && <span className="self-center text-xs text-[#718074]">Reading picture…</span>}
                 </div>
