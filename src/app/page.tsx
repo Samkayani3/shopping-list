@@ -543,8 +543,11 @@ export default function Home() {
           const quantityMatch = leadingQuantity || trailingQuantity;
           const name = leadingQuantity ? leadingQuantity[2] : trailingQuantity ? trailingQuantity[1] : line;
           const amount = quantityMatch ? Number(leadingQuantity ? leadingQuantity[1] : trailingQuantity?.[2]) : 1;
-          return { id: uid(), name: name.trim(), quantity: Math.max(1, amount || 1), selected: true };
+          return { id: uid(), name: name.trim(), quantity: Math.max(1, amount || 1), selected: false };
         }).filter((item) => item.name.length > 1);
+        // Select only the first recognised line by default; the user can
+        // tick any additional products they want to import.
+        if (candidates.length) candidates[0].selected = true;
         setPhotoItems(candidates);
         setShowPhotoReview(true);
         notify(`Found ${candidates.length} readable lines. Review them and untick anything you do not want to add.`);
@@ -663,7 +666,7 @@ export default function Home() {
         .add-product-grid > label > span { display:block; margin:0 0 5px 3px; color:#7d8b7e; font-size:11px; font-weight:700; }
         .add-product-grid .field { min-height:48px; }
         .add-submit { min-height:48px; white-space:nowrap; }
-        .product-row { display:grid; grid-template-columns:minmax(180px,1fr) 68px minmax(0,1.55fr); align-items:center; gap:14px; padding:12px 14px; border:1px solid #e9ede6; border-radius:12px; background:#fff; transition:border-color .15s ease,box-shadow .15s ease; }
+        .product-row { position:relative; display:grid; grid-template-columns:minmax(180px,1fr) 68px minmax(0,1.55fr); align-items:center; gap:14px; padding:12px 14px; border:1px solid #e9ede6; border-radius:12px; background:#fff; transition:border-color .15s ease,box-shadow .15s ease; }
         .product-row:hover { border-color:#cbd9cb; box-shadow:0 3px 12px rgba(24,60,45,.045); }
         .product-main { display:flex; min-width:0; align-items:center; gap:11px; }
         .product-check { display:flex; width:30px; height:30px; flex:0 0 30px; align-items:center; justify-content:center; border-radius:9px; background:#f5f3eb; color:#a98c52; font-size:17px; }
@@ -706,16 +709,16 @@ export default function Home() {
         @media (min-width:601px) { .mobile-menu-button { display:none !important; } }
         @media (max-width:900px) {
           .product-row { grid-template-columns:minmax(0,1fr); gap:10px; padding:12px; }
-          .product-main { grid-row:1; }
-          .product-order { justify-content:flex-start; }
-          .product-controls { grid-template-columns:repeat(2,minmax(0,1fr)) 26px; align-items:end; }
-          .product-status-control { grid-column:1 / 3; }
-          .delete-product { grid-column:3; grid-row:1; align-self:end; }
+          .product-main { grid-row:1; padding-right:76px; }
+          .product-order { position:absolute; top:12px; right:12px; justify-content:flex-end; }
+          .product-controls { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:end; gap:8px; }
+          .product-status-control { grid-column:1 / -1; }
+          .delete-product { grid-column:1 / -1; justify-self:end; }
         }
         @media (max-width:420px) {
           .product-controls { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
-          .product-status-control { grid-column:auto; }
-          .delete-product { grid-column:2; grid-row:auto; justify-self:end; }
+          .product-status-control { grid-column:1 / -1; }
+          .delete-product { grid-column:1 / -1; justify-self:end; }
         }
         .print-sheet { display: none; }
         @media print {
@@ -1026,7 +1029,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div className="mt-3 flex items-center justify-between text-xs text-[#718074]"><span>{photoItems.filter((item) => item.selected).length} selected</span><button type="button" className="font-semibold text-[#176b4a]" onClick={() => setPhotoItems((items) => items.map((item) => ({ ...item, selected: true })))}>Select all</button></div>
+          <div className="mt-3 flex items-center justify-between text-xs text-[#718074]"><span>{photoItems.filter((item) => item.selected).length} selected</span><button type="button" className="font-semibold text-[#176b4a]" onClick={() => setPhotoItems((items) => items.map((item, index) => ({ ...item, selected: index === 0 })))}>Select only first</button></div>
           <button className="primary mt-4 w-full" onClick={addPhotoItems} disabled={!photoItems.some((item) => item.selected && item.name.trim())}>Add selected products</button>
         </Modal>
       )}
@@ -1188,7 +1191,7 @@ function ProductRow({
                 onClick={() => { setDraftQuantity(String(item.quantity)); setEditingQuantity(true); }}
                 aria-label={`Change quantity for ${item.name}`}>Qty: {item.quantity} <span className="text-[10px]">✎ Edit</span></button>
             )}
-            <span>·</span><span>{statusLabel(item.status)}</span>
+
           </div>
         </div>
         {item.image && <img src={item.image} alt={`${item.name} product`} className="h-12 w-12 shrink-0 rounded-lg border border-[#e8e8e2] bg-white object-contain p-1" />}
