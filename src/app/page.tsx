@@ -101,6 +101,7 @@ export default function Home() {
   const [activeId, setActiveId] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [showListLibrary, setShowListLibrary] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [newListName, setNewListName] = useState("");
   const [itemName, setItemName] = useState("");
@@ -682,11 +683,25 @@ export default function Home() {
           .add-submit { grid-column:2; grid-row:2; }
         }
         @media (max-width:600px) {
-          .add-product-grid { grid-template-columns:minmax(0,1fr) 88px; gap:9px; }
+          .add-product-grid { grid-template-columns: minmax(0,1fr) 112px; gap:10px; align-items:end; }
           .add-name { grid-column:1 / -1; }
-          .add-category { grid-column:1; }
-          .add-submit { grid-column:2; grid-row:2; padding-left:10px; padding-right:10px; }
+          .add-quantity { grid-column:1; grid-row:2; }
+          .add-submit { grid-column:2; grid-row:2; min-height:48px; padding:10px 8px; font-size:14px; }
+          .add-category { grid-column:1 / -1; grid-row:3; }
+          .add-tools { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+          .add-tools button, .add-tools label { display:flex; align-items:center; justify-content:center; min-height:42px; white-space:nowrap; }
+          .mobile-drawer { position:fixed; inset:0; z-index:60; display:flex; }
+          .mobile-drawer-backdrop { position:absolute; inset:0; background:rgba(13,35,25,.42); }
+          .mobile-drawer-panel { position:relative; width:min(82vw,320px); height:100%; overflow-y:auto; background:#fff; padding:22px 18px; box-shadow:12px 0 35px rgba(0,0,0,.14); }
+          .mobile-drawer-panel .nav-item { padding:14px 12px; font-size:15px; }
+          .mobile-main { padding-left:12px !important; padding-right:12px !important; padding-top:16px !important; }
+          .mobile-list-panel { padding:15px !important; border-radius:18px !important; }
+          .mobile-list-actions { display:grid !important; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px !important; }
+          .mobile-list-actions button { padding:9px 5px; font-size:12px; }
+          .product-row { border-radius:14px; padding:13px; box-shadow:0 2px 9px rgba(24,60,45,.035); }
+          .product-main { align-items:flex-start; }
         }
+        @media (min-width:601px) { .mobile-menu-button { display:none !important; } }
         @media (max-width:900px) {
           .product-row { grid-template-columns:minmax(0,1fr); gap:10px; padding:12px; }
           .product-main { grid-row:1; }
@@ -729,7 +744,7 @@ export default function Home() {
 
       {/* HEADER */}
       <header className="no-print sticky top-0 z-30 border-b border-[#e8e5d9] bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1800px] items-center justify-between px-5 py-4 lg:px-8">
+        <div className="mx-auto flex max-w-[1800px] items-center justify-between px-4 py-3 lg:px-8">
           <div className="flex items-center gap-3">
             <img src="/logo.jpeg" alt="Shopping List logo" className="h-11 w-11 rounded-xl object-contain" />
             <div>
@@ -741,17 +756,21 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-
-
-
+          <button type="button" className="mobile-menu-button secondary !flex h-11 w-11 items-center justify-center !rounded-xl !p-0 text-2xl" aria-label="Open navigation menu" onClick={() => setMobileMenuOpen(true)}>☰</button>
         </div>
 
       </header>
 
+      {mobileMenuOpen && <div className="mobile-drawer lg:hidden"><button aria-label="Close navigation" className="mobile-drawer-backdrop" onClick={() => setMobileMenuOpen(false)} /><aside className="mobile-drawer-panel no-print"><div className="mb-6 flex items-center justify-between"><span className="text-lg font-bold text-[#174832]">Menu</span><button className="secondary" onClick={() => setMobileMenuOpen(false)}>✕</button></div>{/* Mobile navigation */}<nav className="space-y-1">
+        <button className="nav-item nav-active" onClick={() => { setMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: "smooth" }); }}>▦ &nbsp; Dashboard</button>
+        <button className="nav-item" onClick={() => { setShowNewList(true); setMobileMenuOpen(false); }}>＋ &nbsp; Create a list</button>
+        <button className="nav-item" onClick={() => { setFilter("all"); setShowListLibrary(true); setMobileMenuOpen(false); document.getElementById("shopping-lists")?.scrollIntoView({ behavior: "smooth" }); }}>☷ &nbsp; My shopping lists</button>
+        <button className="nav-item" onClick={() => { setShowSchedule(true); setMobileMenuOpen(false); }}>◷ &nbsp; Shopping schedule</button>
+      </nav><div className="mb-2 mt-8 px-3 text-[11px] font-bold uppercase tracking-[1.7px] text-[#9a9d8d]">Your stores</div>{stores.map((store) => <div key={store} className="nav-item flex items-center gap-2"><span className="text-[#bd9851]">●</span>{store}</div>)}<button className="secondary mt-4 w-full" onClick={() => { setShowNewStore(true); setMobileMenuOpen(false); }}>＋ Add a new store</button></aside></div>}
+
       <div className="mx-auto grid max-w-[1800px] gap-7 px-4 py-6 md:px-7 lg:grid-cols-[270px_minmax(0,1fr)] lg:px-8 lg:py-9">
         {/* SIDEBAR */}
-        <aside className="no-print min-w-0">
+        <aside className="no-print hidden min-w-0 lg:block">
 
           <nav className="space-y-1">
             <button className="nav-item nav-active" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>▦ &nbsp; Dashboard</button>
@@ -808,7 +827,7 @@ export default function Home() {
         </aside>
 
         {/* MAIN CONTENT */}
-        <section className="min-w-0">
+        <section className="mobile-main min-w-0">
           {/* LIST LIBRARY: opened from the sidebar, not permanently taking space */}
           {(showListLibrary || !activeList) && <div className="mb-7" id="shopping-lists">
             <div className="mb-4 flex items-center justify-between gap-3">
@@ -837,7 +856,7 @@ export default function Home() {
 
           {/* ACTIVE LIST */}
           {activeList && (
-            <div className="print-area panel rounded-2xl p-4 soft-shadow md:p-6">
+            <div className="print-area mobile-list-panel panel rounded-2xl p-4 soft-shadow md:p-6">
               <div className="print-sheet">
                 <div className="print-brand">
                   <img src="/logo.jpeg" alt="Shopping List logo" />
@@ -865,7 +884,7 @@ export default function Home() {
                   )}
                 </div>
 
-                <div className="no-print flex flex-wrap gap-2">
+                <div className="no-print mobile-list-actions flex flex-wrap gap-2">
                   <button className="secondary text-xs" onClick={renameList}>
                     Rename
                   </button>
@@ -907,7 +926,7 @@ export default function Home() {
                   ＋ Add a product
                 </h3>
 
-                <div className="mb-3 flex flex-wrap gap-2">
+                <div className="add-tools mb-3 flex flex-wrap gap-2">
                   <button type="button" className="secondary text-xs" onClick={startVoiceInput} disabled={voiceListening}>🎙 Speak product</button>
                   {voiceListening && <><span className="self-center text-xs font-medium text-[#176b4a]">Listening… say the product, then press Stop.</span><button type="button" className="secondary text-xs" onClick={stopVoiceInput}>Stop listening</button></>}
                   <label className="secondary cursor-pointer text-xs">📷 Take photo / Upload picture
@@ -923,35 +942,8 @@ export default function Home() {
                 </div>
                 <div className="mt-2 flex justify-between gap-3 text-[11px] text-[#879286]">
                   <span>Enter a product name and quantity.</span>
-                  <button
-                    className="font-semibold text-[#176b4a]"
-                    onClick={() => setShowNewStore(true)}
-                  >
-                    ＋ Add a store
-                  </button>
                   <button className="font-semibold text-[#176b4a]" onClick={() => setShowNewCategory(true)}>＋ Add a category</button>
                 </div>
-              </div>
-
-              {/* PRODUCT FILTERS */}
-              <div className="no-print mt-6 flex flex-col gap-3 sm:flex-row">
-                <input
-                  className="field flex-1"
-                  placeholder="⌕  Search products..."
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                />
-                <select
-                  className="field custom-select sm:max-w-[190px]"
-                  value={filter}
-                  onChange={(event) => setFilter(event.target.value)}
-                >
-                  <option value="all">All products</option>
-                  <option value="pending">To buy</option>
-                  <option value="purchased">Purchased</option>
-                  <option value="unavailable">Unavailable</option>
-                  <option value="skipped">Skipped</option>
-                </select>
               </div>
 
               {/* PRODUCT GROUPS */}
